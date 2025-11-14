@@ -24,8 +24,18 @@ public class GamePanel extends JPanel implements ActionListener {
     private final ArrayList<Point> snake;
     private char direction = 'R'; // R=Right, L=Left, U=Up, D=Down
     
-    // Food
-    private Point food;
+    // Food system
+    private Food currentFood;
+    private long lastGoldenFoodTime = 0;
+    private long lastBonusFoodTime = 0;
+    private static final long GOLDEN_FOOD_INTERVAL = 15000; // Every 15 seconds
+    private static final long BONUS_FOOD_INTERVAL = 20000; // Every 20 seconds
+    
+    // Speed boost effect
+    private boolean speedBoostActive = false;
+    private long speedBoostEndTime = 0;
+    private static final long SPEED_BOOST_DURATION = 5000; // 5 seconds
+    private int originalDelay;
     
     // Game state
     private boolean running = false;
@@ -64,7 +74,8 @@ public class GamePanel extends JPanel implements ActionListener {
         
         direction = 'R';
         score = 0;
-        spawnFood();
+        originalDelay = delay;
+        spawnFood(Food.FoodType.NORMAL);
         repaint();
     }
     
@@ -83,7 +94,11 @@ public class GamePanel extends JPanel implements ActionListener {
         direction = 'R';
         score = 0;
         isNewHighScore = false; // Reset high score flag
-        spawnFood();
+        originalDelay = delay;
+        speedBoostActive = false;
+        lastGoldenFoodTime = System.currentTimeMillis();
+        lastBonusFoodTime = System.currentTimeMillis();
+        spawnFood(Food.FoodType.NORMAL);
         running = true;
         paused = false;
         gameStarted = true; // Mark that game has been started
@@ -138,7 +153,8 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     public void setDelay(int newDelay) {
         this.delay = newDelay;
-        if (timer != null && running) {
+        this.originalDelay = newDelay;
+        if (timer != null && running && !speedBoostActive) {
             timer.setDelay(newDelay);
         }
     }
@@ -151,20 +167,49 @@ public class GamePanel extends JPanel implements ActionListener {
     }
     
     /**
-     * Generate food at random location
+     * Generate food at random location with specified type
      */
-    public void spawnFood() {
+    public void spawnFood(Food.FoodType type) {
         int x = random.nextInt(BOARD_WIDTH / UNIT_SIZE) * UNIT_SIZE;
         int y = random.nextInt(BOARD_HEIGHT / UNIT_SIZE) * UNIT_SIZE;
-        food = new Point(x, y);
+        Point position = new Point(x, y);
         
         // Make sure food doesn't spawn on snake body
         for (Point segment : snake) {
-            if (segment.equals(food)) {
-                spawnFood(); // Recursively find new position
+            if (segment.equals(position)) {
+                spawnFood(type); // Recursively find new position
                 return;
             }
         }
+        
+        currentFood = new Food(position, type);
+    }
+    
+    /**
+     * Determine next food type based on game conditions
+     */
+    private Food.FoodType getNextFoodType() {
+        long currentTime = System.currentTimeMillis();
+        
+        // Check if it's time for bonus food (highest priority)
+        if (currentTime - lastBonusFoodTime >= BONUS_FOOD_INTERVAL) {
+            lastBonusFoodTime = currentTime;
+            return Food.FoodType.BONUS;
+        }
+        
+        // Check if it's time for golden food
+        if (currentTime - lastGoldenFoodTime >= GOLDEN_FOOD_INTERVAL) {
+            lastGoldenFoodTime = currentTime;
+            return Food.FoodType.GOLDEN;
+        }
+        
+        // Random chance for speed boost (10% chance)
+        if (random.nextInt(10) == 0) {
+            return Food.FoodType.SPEED;
+        }
+        
+        // Default to normal food
+        return Food.FoodType.NORMAL;
     }
     
     /**
@@ -194,8 +239,14 @@ public class GamePanel extends JPanel implements ActionListener {
         snake.add(0, newHead);
         
         // Check if snake ate food
-        if (newHead.equals(food)) {
-            score++;
+        if (newHead.equals(currentFood.getPosition())) {
+            // Add points based on food type
+            score += currentFood.getPoints();
+            
+            // Apply special effects
+            if (currentFood.hasEffect() && currentFood.getType() == Food.FoodType.SPEED) {
+                activateSpeedBoost();
+            }
             
             // Check for new high score
             if (score > highScoreManager.getHighScore()) {
@@ -205,10 +256,35 @@ public class GamePanel extends JPanel implements ActionListener {
                 highScoreManager.updateHighScore(score);
             }
             
-            spawnFood();
+            // Spawn next food
+            spawnFood(getNextFoodType());
         } else {
             // Remove tail if no food eaten (snake doesn't grow)
             snake.remove(snake.size() - 1);
+        }
+    }
+    
+    /**
+     * Activate speed boost effect
+     */
+    private void activateSpeedBoost() {
+        speedBoostActive = true;
+        speedBoostEndTime = System.currentTimeMillis() + SPEED_BOOST_DURATION;
+        int boostedDelay = (int)(originalDelay * 0.6); // 40% faster
+        if (timer != null) {
+            timer.setDelay(boostedDelay);
+        }
+    }
+    
+    /**
+     * Check and deactivate speed boost if expired
+     */
+    private void checkSpeedBoost() {
+        if (speedBoostActive && System.currentTimeMillis() >= speedBoostEndTime) {
+            speedBoostActive = false;
+            if (timer != null) {
+                timer.setDelay(originalDelay);
+            }
         }
     }
     
@@ -265,9 +341,15 @@ public class GamePanel extends JPanel implements ActionListener {
                 g.drawLine(0, i * UNIT_SIZE, BOARD_WIDTH, i * UNIT_SIZE);
             }
             
+            // Check if bonus food expired
+            if (currentFood != null && currentFood.isExpired()) {
+                spawnFood(getNextFoodType());
+            }
+            
             // Draw food
-            g.setColor(Color.RED);
-            g.fillOval(food.x, food.y, UNIT_SIZE, UNIT_SIZE);
+            if (currentFood != null) {
+                drawFood(g, currentFood);
+            }
             
             // Draw snake
             for (int i = 0; i < snake.size(); i++) {
@@ -308,6 +390,37 @@ public class GamePanel extends JPanel implements ActionListener {
     }
     
     /**
+     * Draw food with effects
+     */
+    private void drawFood(Graphics g, Food food) {
+        Point pos = food.getPosition();
+        
+        // Draw glow effect for special foods
+        if (food.getType() != Food.FoodType.NORMAL) {
+            g.setColor(new Color(food.getColor().getRed(), 
+                                 food.getColor().getGreen(), 
+                                 food.getColor().getBlue(), 50));
+            g.fillOval(pos.x - 5, pos.y - 5, UNIT_SIZE + 10, UNIT_SIZE + 10);
+        }
+        
+        // Draw main food
+        g.setColor(food.getColor());
+        g.fillOval(pos.x, pos.y, UNIT_SIZE, UNIT_SIZE);
+        
+        // Draw emoji
+        g.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+        g.drawString(food.getEmoji(), pos.x + 3, pos.y + 20);
+        
+        // Draw timer for bonus food
+        if (food.getType() == Food.FoodType.BONUS) {
+            long remaining = food.getRemainingTime() / 1000;
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 12));
+            g.drawString(String.valueOf(remaining), pos.x + 8, pos.y - 5);
+        }
+    }
+    
+    /**
      * Draw score panel below the game board
      */
     private void drawScorePanel(Graphics g) {
@@ -328,11 +441,23 @@ public class GamePanel extends JPanel implements ActionListener {
         g.setColor(Color.YELLOW);
         g.drawString("🏆 High Score: " + highScoreManager.getHighScore(), 250, BOARD_HEIGHT + 35);
         
-        // New High Score indicator
+        // New High Score indicator or Speed Boost indicator
         if (isNewHighScore) {
             g.setColor(Color.YELLOW);
             g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 18));
-            g.drawString("⭐ NEW RECORD!", 480, BOARD_HEIGHT + 35);
+            g.drawString("⭐ NEW RECORD!", 460, BOARD_HEIGHT + 35);
+        } else if (speedBoostActive) {
+            long remaining = (speedBoostEndTime - System.currentTimeMillis()) / 1000;
+            g.setColor(new Color(0, 191, 255));
+            g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 18));
+            g.drawString("⚡ SPEED BOOST " + remaining + "s", 440, BOARD_HEIGHT + 35);
+        }
+        
+        // Draw current food description
+        if (currentFood != null && currentFood.getType() != Food.FoodType.NORMAL) {
+            g.setColor(new Color(180, 180, 180));
+            g.setFont(new Font("Segoe UI Emoji", Font.ITALIC, 14));
+            g.drawString(currentFood.getDescription(), 20, BOARD_HEIGHT + 52);
         }
     }
     
@@ -440,6 +565,7 @@ public class GamePanel extends JPanel implements ActionListener {
         if (running && !paused) {
             move();
             checkCollisions();
+            checkSpeedBoost();
         }
         repaint();
     }
