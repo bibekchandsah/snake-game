@@ -71,8 +71,8 @@ public class SettingsPanel extends JPanel {
         separator.setForeground(Color.GRAY);
         add(separator);
         
-        // Wall collision checkbox
-        wallCollisionCheckBox = new JCheckBox("Wall Collision", true);
+        // Wall collision checkbox (default: unchecked/disabled)
+        wallCollisionCheckBox = new JCheckBox("Wall Collision", false);
         wallCollisionCheckBox.setForeground(Color.WHITE);
         wallCollisionCheckBox.setBackground(new Color(40, 40, 40));
         wallCollisionCheckBox.setFont(new Font("Arial", Font.BOLD, 14));
@@ -122,6 +122,15 @@ public class SettingsPanel extends JPanel {
         });
         
         add(startPauseButton);
+        
+        // Add game state listener to update button when game is over
+        Timer buttonUpdateTimer = new Timer(100, e -> {
+            if (!gamePanel.isRunning() && !startPauseButton.getText().equals("Start")) {
+                startPauseButton.setText("Start");
+                startPauseButton.setBackground(new Color(0, 150, 0));
+            }
+        });
+        buttonUpdateTimer.start();
     }
     
     /**

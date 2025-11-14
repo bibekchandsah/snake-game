@@ -17,7 +17,7 @@ public class GamePanel extends JPanel implements ActionListener {
     
     // Game settings
     private int delay = 150; // Timer delay in milliseconds (Easy=150, Medium=100, Hard=50)
-    private boolean wallCollisionEnabled = true; // User choice for wall collision
+    private boolean wallCollisionEnabled = false; // User choice for wall collision (default: disabled)
     
     // Snake body
     private final ArrayList<Point> snake;
@@ -42,11 +42,29 @@ public class GamePanel extends JPanel implements ActionListener {
         setFocusable(true);
         addKeyListener(new MyKeyAdapter());
         
-        startGame();
+        // Don't auto-start game - wait for user to click Start button
+        initializeSnake();
     }
     
     /**
-     * Initialize the game
+     * Initialize snake position (called on load, doesn't start game)
+     */
+    private void initializeSnake() {
+        snake.clear();
+        int startX = BOARD_WIDTH / 2;
+        int startY = BOARD_HEIGHT / 2;
+        snake.add(new Point(startX, startY)); // Head
+        snake.add(new Point(startX - UNIT_SIZE, startY));
+        snake.add(new Point(startX - 2 * UNIT_SIZE, startY));
+        
+        direction = 'R';
+        score = 0;
+        spawnFood();
+        repaint();
+    }
+    
+    /**
+     * Start the game
      */
     public void startGame() {
         // Initialize snake at center with 3 segments
