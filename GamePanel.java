@@ -12,6 +12,7 @@ public class GamePanel extends JPanel implements ActionListener {
     // Game board dimensions
     private static final int BOARD_WIDTH = 600;
     private static final int BOARD_HEIGHT = 600;
+    private static final int SCORE_PANEL_HEIGHT = 60; // Height for score display below board
     private static final int UNIT_SIZE = 25;
     private static final int GAME_UNITS = (BOARD_WIDTH * BOARD_HEIGHT) / (UNIT_SIZE * UNIT_SIZE);
     
@@ -30,15 +31,18 @@ public class GamePanel extends JPanel implements ActionListener {
     private boolean running = false;
     private boolean paused = false;
     private boolean gameStarted = false; // Track if game has ever been started
+    private boolean isNewHighScore = false; // Track if current game achieved new high score
     private int score = 0;
     private Timer timer;
     private Random random;
+    private HighScoreManager highScoreManager;
     
     public GamePanel() {
         random = new Random();
         snake = new ArrayList<>();
+        highScoreManager = new HighScoreManager();
         
-        setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
+        setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT + SCORE_PANEL_HEIGHT));
         setBackground(Color.BLACK);
         setFocusable(true);
         addKeyListener(new MyKeyAdapter());
@@ -78,6 +82,7 @@ public class GamePanel extends JPanel implements ActionListener {
         
         direction = 'R';
         score = 0;
+        isNewHighScore = false; // Reset high score flag
         spawnFood();
         running = true;
         paused = false;
@@ -191,6 +196,15 @@ public class GamePanel extends JPanel implements ActionListener {
         // Check if snake ate food
         if (newHead.equals(food)) {
             score++;
+            
+            // Check for new high score
+            if (score > highScoreManager.getHighScore()) {
+                if (!isNewHighScore) {
+                    isNewHighScore = true; // Mark that we achieved a new high score
+                }
+                highScoreManager.updateHighScore(score);
+            }
+            
             spawnFood();
         } else {
             // Remove tail if no food eaten (snake doesn't grow)
@@ -268,10 +282,8 @@ public class GamePanel extends JPanel implements ActionListener {
                 g.fillRect(segment.x, segment.y, UNIT_SIZE, UNIT_SIZE);
             }
             
-            // Draw score
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 20));
-            g.drawString("Score: " + score, 10, 25);
+            // Draw score panel at bottom
+            drawScorePanel(g);
             
             // Draw paused message
             if (paused) {
@@ -296,35 +308,64 @@ public class GamePanel extends JPanel implements ActionListener {
     }
     
     /**
+     * Draw score panel below the game board
+     */
+    private void drawScorePanel(Graphics g) {
+        // Draw separator line
+        g.setColor(new Color(60, 60, 60));
+        g.fillRect(0, BOARD_HEIGHT, BOARD_WIDTH, 2);
+        
+        // Score panel background
+        g.setColor(new Color(30, 30, 30));
+        g.fillRect(0, BOARD_HEIGHT + 2, BOARD_WIDTH, SCORE_PANEL_HEIGHT - 2);
+        
+        // Current Score with emoji
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 20));
+        g.drawString("🎯 Score: " + score, 20, BOARD_HEIGHT + 35);
+        
+        // High Score with emoji
+        g.setColor(Color.YELLOW);
+        g.drawString("🏆 High Score: " + highScoreManager.getHighScore(), 250, BOARD_HEIGHT + 35);
+        
+        // New High Score indicator
+        if (isNewHighScore) {
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 18));
+            g.drawString("⭐ NEW RECORD!", 480, BOARD_HEIGHT + 35);
+        }
+    }
+    
+    /**
      * Display welcome screen
      */
     public void welcomeScreen(Graphics g) {
-        // Welcome title
+        // Welcome title with emoji
         g.setColor(new Color(0, 200, 0));
-        g.setFont(new Font("Arial", Font.BOLD, 60));
+        g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 60));
         FontMetrics metrics1 = getFontMetrics(g.getFont());
-        g.drawString("Snake Game", 
-                    (BOARD_WIDTH - metrics1.stringWidth("Snake Game")) / 2, 
+        g.drawString("🐍 Snake Game", 
+                    (BOARD_WIDTH - metrics1.stringWidth("🐍 Snake Game")) / 2, 
                     BOARD_HEIGHT / 2 - 100);
         
         // Welcome message
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.PLAIN, 22));
+        g.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 22));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("Welcome! Configure your settings above", 
-                    (BOARD_WIDTH - metrics2.stringWidth("Welcome! Configure your settings above")) / 2, 
+        g.drawString("Welcome! Configure your settings above ⚙️", 
+                    (BOARD_WIDTH - metrics2.stringWidth("Welcome! Configure your settings above ⚙️")) / 2, 
                     BOARD_HEIGHT / 2 - 20);
         
         // Instructions
         g.setColor(new Color(180, 180, 180));
-        g.setFont(new Font("Arial", Font.PLAIN, 18));
+        g.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 18));
         FontMetrics metrics3 = getFontMetrics(g.getFont());
         
         String[] instructions = {
-            "• Select Difficulty: Easy, Medium, or Hard",
-            "• Toggle Wall Collision (off = wrap around)",
-            "• Click 'Start' button to begin playing",
-            "• Use Arrow Keys to control the snake"
+            "⚡ Select Difficulty: Easy, Medium, or Hard",
+            "🧱 Toggle Wall Collision (off = wrap around)",
+            "▶️ Click 'Start' button to begin playing",
+            "⌨️ Use Arrow Keys to control the snake"
         };
         
         int yPos = BOARD_HEIGHT / 2 + 40;
@@ -337,10 +378,10 @@ public class GamePanel extends JPanel implements ActionListener {
         
         // Start prompt
         g.setColor(new Color(0, 255, 0));
-        g.setFont(new Font("Arial", Font.BOLD, 24));
+        g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 24));
         FontMetrics metrics4 = getFontMetrics(g.getFont());
-        g.drawString("Click 'Start' to Play!", 
-                    (BOARD_WIDTH - metrics4.stringWidth("Click 'Start' to Play!")) / 2, 
+        g.drawString("🎮 Click 'Start' to Play!", 
+                    (BOARD_WIDTH - metrics4.stringWidth("🎮 Click 'Start' to Play!")) / 2, 
                     BOARD_HEIGHT / 2 + 200);
     }
     
@@ -350,26 +391,45 @@ public class GamePanel extends JPanel implements ActionListener {
     public void gameOver(Graphics g) {
         // Game Over text
         g.setColor(Color.RED);
-        g.setFont(new Font("Arial", Font.BOLD, 50));
+        g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 50));
         FontMetrics metrics1 = getFontMetrics(g.getFont());
-        g.drawString("Game Over", 
-                    (BOARD_WIDTH - metrics1.stringWidth("Game Over")) / 2, 
-                    BOARD_HEIGHT / 2 - 50);
+        g.drawString("💀 Game Over", 
+                    (BOARD_WIDTH - metrics1.stringWidth("💀 Game Over")) / 2, 
+                    BOARD_HEIGHT / 2 - 100);
+        
+        // New High Score celebration
+        if (isNewHighScore) {
+            g.setColor(Color.YELLOW);
+            g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 36));
+            FontMetrics metricsHS = getFontMetrics(g.getFont());
+            g.drawString("⭐ NEW HIGH SCORE! ⭐", 
+                        (BOARD_WIDTH - metricsHS.stringWidth("⭐ NEW HIGH SCORE! ⭐")) / 2, 
+                        BOARD_HEIGHT / 2 - 40);
+        }
         
         // Score
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 30));
+        g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 30));
         FontMetrics metrics2 = getFontMetrics(g.getFont());
-        g.drawString("Final Score: " + score, 
-                    (BOARD_WIDTH - metrics2.stringWidth("Final Score: " + score)) / 2, 
+        g.drawString("🎯 Final Score: " + score, 
+                    (BOARD_WIDTH - metrics2.stringWidth("🎯 Final Score: " + score)) / 2, 
                     BOARD_HEIGHT / 2 + 20);
         
-        // Restart instruction
-        g.setFont(new Font("Arial", Font.PLAIN, 20));
+        // High Score
+        g.setColor(Color.YELLOW);
+        g.setFont(new Font("Segoe UI Emoji", Font.BOLD, 24));
         FontMetrics metrics3 = getFontMetrics(g.getFont());
-        g.drawString("Click 'Start' button to restart", 
-                    (BOARD_WIDTH - metrics3.stringWidth("Click 'Start' button to restart")) / 2, 
-                    BOARD_HEIGHT / 2 + 70);
+        g.drawString("🏆 High Score: " + highScoreManager.getHighScore(), 
+                    (BOARD_WIDTH - metrics3.stringWidth("🏆 High Score: " + highScoreManager.getHighScore())) / 2, 
+                    BOARD_HEIGHT / 2 + 60);
+        
+        // Restart instruction
+        g.setColor(Color.LIGHT_GRAY);
+        g.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 20));
+        FontMetrics metrics4 = getFontMetrics(g.getFont());
+        g.drawString("🔄 Click 'Start' button to restart", 
+                    (BOARD_WIDTH - metrics4.stringWidth("🔄 Click 'Start' button to restart")) / 2, 
+                    BOARD_HEIGHT / 2 + 110);
     }
     
     /**
