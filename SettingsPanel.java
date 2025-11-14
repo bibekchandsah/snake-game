@@ -16,13 +16,14 @@ public class SettingsPanel extends JPanel {
     private JRadioButton mediumButton;
     private JRadioButton hardButton;
     private JCheckBox wallCollisionCheckBox;
+    private JButton startPauseButton;
     
     public SettingsPanel(GamePanel gamePanel) {
         this.gamePanel = gamePanel;
         
         setBackground(new Color(40, 40, 40));
         setPreferredSize(new Dimension(600, 60));
-        setLayout(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        setLayout(new FlowLayout(FlowLayout.CENTER, 15, 10));
         
         // Difficulty level section
         JLabel difficultyLabel = new JLabel("Difficulty:");
@@ -43,6 +44,11 @@ public class SettingsPanel extends JPanel {
         styleRadioButton(easyButton);
         styleRadioButton(mediumButton);
         styleRadioButton(hardButton);
+        
+        // Prevent SPACE key from triggering radio buttons
+        easyButton.setFocusable(false);
+        mediumButton.setFocusable(false);
+        hardButton.setFocusable(false);
         
         // Group radio buttons
         ButtonGroup difficultyGroup = new ButtonGroup();
@@ -71,6 +77,7 @@ public class SettingsPanel extends JPanel {
         wallCollisionCheckBox.setBackground(new Color(40, 40, 40));
         wallCollisionCheckBox.setFont(new Font("Arial", Font.BOLD, 14));
         wallCollisionCheckBox.setFocusPainted(false);
+        wallCollisionCheckBox.setFocusable(false); // Prevent SPACE key from triggering
         
         wallCollisionCheckBox.addActionListener(e -> 
             gamePanel.setWallCollisionEnabled(wallCollisionCheckBox.isSelected())
@@ -78,11 +85,43 @@ public class SettingsPanel extends JPanel {
         
         add(wallCollisionCheckBox);
         
-        // Add info label
-        JLabel infoLabel = new JLabel("   [SPACE: Restart]");
-        infoLabel.setForeground(Color.LIGHT_GRAY);
-        infoLabel.setFont(new Font("Arial", Font.ITALIC, 12));
-        add(infoLabel);
+        // Add separator
+        JSeparator separator2 = new JSeparator(SwingConstants.VERTICAL);
+        separator2.setPreferredSize(new Dimension(2, 30));
+        separator2.setForeground(Color.GRAY);
+        add(separator2);
+        
+        // Start/Pause button
+        startPauseButton = new JButton("Start");
+        startPauseButton.setFont(new Font("Arial", Font.BOLD, 14));
+        startPauseButton.setForeground(Color.WHITE);
+        startPauseButton.setBackground(new Color(0, 150, 0));
+        startPauseButton.setFocusPainted(false);
+        startPauseButton.setPreferredSize(new Dimension(100, 35));
+        startPauseButton.setBorderPainted(false);
+        startPauseButton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        startPauseButton.addActionListener(e -> {
+            if (!gamePanel.isRunning()) {
+                // Start new game
+                gamePanel.startGame();
+                startPauseButton.setText("Pause");
+                startPauseButton.setBackground(new Color(200, 150, 0));
+            } else if (gamePanel.isPaused()) {
+                // Resume game
+                gamePanel.resumeGame();
+                startPauseButton.setText("Pause");
+                startPauseButton.setBackground(new Color(200, 150, 0));
+            } else {
+                // Pause game
+                gamePanel.pauseGame();
+                startPauseButton.setText("Resume");
+                startPauseButton.setBackground(new Color(0, 150, 0));
+            }
+            gamePanel.requestFocusInWindow(); // Return focus to game panel
+        });
+        
+        add(startPauseButton);
     }
     
     /**

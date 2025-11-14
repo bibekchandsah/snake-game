@@ -28,6 +28,7 @@ public class GamePanel extends JPanel implements ActionListener {
     
     // Game state
     private boolean running = false;
+    private boolean paused = false;
     private int score = 0;
     private Timer timer;
     private Random random;
@@ -60,12 +61,51 @@ public class GamePanel extends JPanel implements ActionListener {
         score = 0;
         spawnFood();
         running = true;
+        paused = false;
         
         if (timer != null) {
             timer.stop();
         }
         timer = new Timer(delay, this);
         timer.start();
+    }
+    
+    /**
+     * Pause the game
+     */
+    public void pauseGame() {
+        if (running) {
+            paused = true;
+            if (timer != null) {
+                timer.stop();
+            }
+        }
+    }
+    
+    /**
+     * Resume the game
+     */
+    public void resumeGame() {
+        if (running && paused) {
+            paused = false;
+            if (timer != null) {
+                timer.start();
+            }
+        }
+    }
+    
+    /**
+     * Check if game is running
+     */
+    public boolean isRunning() {
+        return running;
+    }
+    
+    /**
+     * Check if game is paused
+     */
+    public boolean isPaused() {
+        return paused;
     }
     
     /**
@@ -213,6 +253,19 @@ public class GamePanel extends JPanel implements ActionListener {
             g.setFont(new Font("Arial", Font.BOLD, 20));
             g.drawString("Score: " + score, 10, 25);
             
+            // Draw paused message
+            if (paused) {
+                g.setColor(new Color(0, 0, 0, 150));
+                g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
+                
+                g.setColor(Color.YELLOW);
+                g.setFont(new Font("Arial", Font.BOLD, 50));
+                FontMetrics metrics = getFontMetrics(g.getFont());
+                g.drawString("PAUSED", 
+                            (BOARD_WIDTH - metrics.stringWidth("PAUSED")) / 2, 
+                            BOARD_HEIGHT / 2);
+            }
+            
         } else {
             gameOver(g);
         }
@@ -241,8 +294,8 @@ public class GamePanel extends JPanel implements ActionListener {
         // Restart instruction
         g.setFont(new Font("Arial", Font.PLAIN, 20));
         FontMetrics metrics3 = getFontMetrics(g.getFont());
-        g.drawString("Press SPACE to restart", 
-                    (BOARD_WIDTH - metrics3.stringWidth("Press SPACE to restart")) / 2, 
+        g.drawString("Click 'Start' button to restart", 
+                    (BOARD_WIDTH - metrics3.stringWidth("Click 'Start' button to restart")) / 2, 
                     BOARD_HEIGHT / 2 + 70);
     }
     
@@ -251,7 +304,7 @@ public class GamePanel extends JPanel implements ActionListener {
      */
     @Override
     public void actionPerformed(ActionEvent e) {
-        if (running) {
+        if (running && !paused) {
             move();
             checkCollisions();
         }
@@ -275,11 +328,6 @@ public class GamePanel extends JPanel implements ActionListener {
                 direction = 'U';
             } else if (key == KeyEvent.VK_DOWN && direction != 'U') {
                 direction = 'D';
-            }
-            
-            // Restart game with SPACE
-            if (key == KeyEvent.VK_SPACE && !running) {
-                startGame();
             }
         }
     }
