@@ -29,6 +29,7 @@ public class GamePanel extends JPanel implements ActionListener {
     // Game state
     private boolean running = false;
     private boolean paused = false;
+    private boolean gameStarted = false; // Track if game has ever been started
     private int score = 0;
     private Timer timer;
     private Random random;
@@ -80,6 +81,7 @@ public class GamePanel extends JPanel implements ActionListener {
         spawnFood();
         running = true;
         paused = false;
+        gameStarted = true; // Mark that game has been started
         
         if (timer != null) {
             timer.stop();
@@ -284,9 +286,62 @@ public class GamePanel extends JPanel implements ActionListener {
                             BOARD_HEIGHT / 2);
             }
             
-        } else {
+        } else if (gameStarted) {
+            // Game over screen (only if game was actually played)
             gameOver(g);
+        } else {
+            // Welcome screen (initial load)
+            welcomeScreen(g);
         }
+    }
+    
+    /**
+     * Display welcome screen
+     */
+    public void welcomeScreen(Graphics g) {
+        // Welcome title
+        g.setColor(new Color(0, 200, 0));
+        g.setFont(new Font("Arial", Font.BOLD, 60));
+        FontMetrics metrics1 = getFontMetrics(g.getFont());
+        g.drawString("Snake Game", 
+                    (BOARD_WIDTH - metrics1.stringWidth("Snake Game")) / 2, 
+                    BOARD_HEIGHT / 2 - 100);
+        
+        // Welcome message
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.PLAIN, 22));
+        FontMetrics metrics2 = getFontMetrics(g.getFont());
+        g.drawString("Welcome! Configure your settings above", 
+                    (BOARD_WIDTH - metrics2.stringWidth("Welcome! Configure your settings above")) / 2, 
+                    BOARD_HEIGHT / 2 - 20);
+        
+        // Instructions
+        g.setColor(new Color(180, 180, 180));
+        g.setFont(new Font("Arial", Font.PLAIN, 18));
+        FontMetrics metrics3 = getFontMetrics(g.getFont());
+        
+        String[] instructions = {
+            "• Select Difficulty: Easy, Medium, or Hard",
+            "• Toggle Wall Collision (off = wrap around)",
+            "• Click 'Start' button to begin playing",
+            "• Use Arrow Keys to control the snake"
+        };
+        
+        int yPos = BOARD_HEIGHT / 2 + 40;
+        for (String instruction : instructions) {
+            g.drawString(instruction, 
+                        (BOARD_WIDTH - metrics3.stringWidth(instruction)) / 2, 
+                        yPos);
+            yPos += 35;
+        }
+        
+        // Start prompt
+        g.setColor(new Color(0, 255, 0));
+        g.setFont(new Font("Arial", Font.BOLD, 24));
+        FontMetrics metrics4 = getFontMetrics(g.getFont());
+        g.drawString("Click 'Start' to Play!", 
+                    (BOARD_WIDTH - metrics4.stringWidth("Click 'Start' to Play!")) / 2, 
+                    BOARD_HEIGHT / 2 + 200);
     }
     
     /**
