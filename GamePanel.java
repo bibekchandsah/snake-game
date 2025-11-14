@@ -490,7 +490,7 @@ public class GamePanel extends JPanel implements ActionListener {
             "⚡ Select Difficulty: Easy, Medium, or Hard",
             "🧱 Toggle Wall Collision (off = wrap around)",
             "▶️ Click 'Start' button to begin playing",
-            "⌨️ Use Arrow Keys to control the snake"
+            "⌨️ Use Arrow Keys or WASD to control"
         };
         
         int yPos = BOARD_HEIGHT / 2 + 40;
@@ -578,7 +578,7 @@ public class GamePanel extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             int key = e.getKeyCode();
             
-            // Direction controls (cannot reverse instantly)
+            // Direction controls with Arrow Keys (cannot reverse instantly)
             if (key == KeyEvent.VK_LEFT && direction != 'R') {
                 direction = 'L';
             } else if (key == KeyEvent.VK_RIGHT && direction != 'L') {
@@ -586,6 +586,17 @@ public class GamePanel extends JPanel implements ActionListener {
             } else if (key == KeyEvent.VK_UP && direction != 'D') {
                 direction = 'U';
             } else if (key == KeyEvent.VK_DOWN && direction != 'U') {
+                direction = 'D';
+            }
+            
+            // Direction controls with WASD Keys (cannot reverse instantly)
+            else if (key == KeyEvent.VK_A && direction != 'R') {
+                direction = 'L';
+            } else if (key == KeyEvent.VK_D && direction != 'L') {
+                direction = 'R';
+            } else if (key == KeyEvent.VK_W && direction != 'D') {
+                direction = 'U';
+            } else if (key == KeyEvent.VK_S && direction != 'U') {
                 direction = 'D';
             }
         }

@@ -49,10 +49,12 @@ java SnakeGame
 ## 🎯 How to Play
 
 ### Controls
-- **⬆️ Up Arrow** - Move Up
-- **⬇️ Down Arrow** - Move Down
-- **⬅️ Left Arrow** - Move Left
-- **➡️ Right Arrow** - Move Right
+- **⬆️ Up Arrow / W** - Move Up
+- **⬇️ Down Arrow / S** - Move Down
+- **⬅️ Left Arrow / A** - Move Left
+- **➡️ Right Arrow / D** - Move Right
+
+*Supports both Arrow Keys and WASD keys for movement!*
 
 ### Game Rules
 1. Click the **Start** button to begin
