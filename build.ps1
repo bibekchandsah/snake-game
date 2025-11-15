@@ -20,7 +20,11 @@ Write-Host "✅ Manifest created!" -ForegroundColor Green
 
 # Step 3: Create JAR file
 Write-Host "`n📦 Step 3: Creating JAR file..." -ForegroundColor Cyan
-jar cvfm SnakeGame.jar manifest.txt *.class
+try {
+    jar cvfm SnakeGame.jar manifest.txt *.class icon.ico icon.png
+} catch {
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User"); jar cvfm SnakeGame.jar manifest.txt *.class icon.ico icon.png
+}
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ JAR creation failed!" -ForegroundColor Red

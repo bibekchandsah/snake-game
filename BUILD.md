@@ -53,7 +53,12 @@ echo "Main-Class: SnakeGame" > manifest.txt
 
 #### Step 3: Create JAR File
 ```powershell
-jar cvfm SnakeGame.jar manifest.txt *.class
+jar cvfm SnakeGame.jar manifest.txt *.class icon.ico icon.png
+```
+or
+```powershell
+$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User"); jar cvfm SnakeGame.jar manifest.txt *.class icon.ico icon.png
+
 ```
 
 #### Step 4: Test JAR File
@@ -71,7 +76,7 @@ java -jar SnakeGame.jar
 
 **OR** use command line:
 ```powershell
-"C:\Program Files (x86)\Launch4j\launch4jc.exe" launch4j-config.xml
+& "C:\Program Files (x86)\Launch4j\launch4jc.exe" "launch4j-config.xml"
 ```
 
 ## 🎨 Custom Icon
@@ -182,6 +187,10 @@ native-image -jar SnakeGame.jar SnakeGame
 - Ensure all .class files are included in JAR
 - Verify JAR file structure: `jar tf SnakeGame.jar`
 
+### "jar not found" error
+- Make sure java **bin** folder is in environment variable
+
+
 ## 📊 File Sizes
 
 | File | Approximate Size |
@@ -229,71 +238,3 @@ Release/
 ├── preview3.png           # Game over screen
 └── LICENSE                # License file (optional)
 ```
-
-## 📤 Publishing to GitHub Releases
-
-### Step 1: Create a New Release
-
-```bash
-# Tag your version
-git tag -a v1.0.0 -m "Release version 1.0.0"
-git push origin v1.0.0
-```
-
-### Step 2: Upload Files
-
-1. Go to your repository on GitHub
-2. Click **"Releases"** → **"Draft a new release"**
-3. Select your tag (v1.0.0)
-4. Set release title: **"Snake Game v1.0.0"**
-5. Add description:
-```markdown
-## 🐍 Snake Game v1.0.0
-
-### ⬇️ Download
-- **[SnakeGame.exe](SnakeGame.exe)** - Windows Executable
-- **[SnakeGame.jar](SnakeGame.jar)** - Cross-platform JAR
-
-### 🎮 Features
-- Three difficulty levels (Easy, Medium, Hard)
-- Four food varieties with special effects
-- High score tracking with persistence
-- Wall collision toggle
-- WASD and Arrow key support
-
-### 📋 Requirements
-- Windows 7/8/10/11
-- Java JRE 8 or higher
-
-### 📸 Screenshots
-![Welcome](preview1.png)
-![Gameplay](preview2.png)
-![Game Over](preview3.png)
-```
-
-6. Upload files:
-   - SnakeGame.exe
-   - SnakeGame.jar
-   - preview1.png
-   - preview2.png
-   - preview3.png
-
-7. Click **"Publish release"**
-
-### Step 3: Update README Links
-
-Ensure your README.md has correct download links:
-```markdown
-[Download SnakeGame.exe](https://github.com/YOUR_USERNAME/snake-game/releases/latest/download/SnakeGame.exe)
-```
-
-## 🌐 Direct Download Links
-
-After publishing release, users can download via:
-
-```
-https://github.com/YOUR_USERNAME/snake-game/releases/latest/download/SnakeGame.exe
-https://github.com/YOUR_USERNAME/snake-game/releases/latest/download/SnakeGame.jar
-```
-
-Replace `YOUR_USERNAME` with your GitHub username.
