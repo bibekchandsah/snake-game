@@ -2,6 +2,37 @@
 
 A modern, feature-rich Snake Game built with Java Swing, featuring multiple difficulty levels, special food varieties, high score tracking, and emoji support!
 
+## 📸 Screenshots
+
+![Welcome Screen](preview1.png)
+*Welcome screen with game instructions*
+
+![Gameplay](preview2.png)
+*Active gameplay with special food and score tracking*
+
+![Game Over](preview3.png)
+*Game over screen showing final score and high score*
+
+## 🎮 Download & Play
+
+### Quick Start (Windows)
+**[Download SnakeGame.exe](https://github.com/bibekchandsah/snake-game/releases/latest/download/SnakeGame.exe)** 
+
+Simply download and double-click to play! No installation required.
+
+*Note: Requires Java Runtime Environment (JRE) 8 or higher installed on your system.*
+
+### Alternative Download
+- **[Download SnakeGame.jar](https://github.com/bibekchandsah/snake-game/releases/latest)** - Run with: `java -jar SnakeGame.jar`
+
+## 📋 System Requirements
+
+- **Operating System:** Windows 7/8/10/11, Linux, or macOS
+- **Java:** JRE 8 or higher ([Download Java](https://www.java.com/download/))
+- **RAM:** 256 MB minimum
+- **Disk Space:** 50 MB
+- **Display:** 800x600 resolution or higher
+
 ## 📸 Features
 
 ### 🎮 Gameplay Features
@@ -32,19 +63,40 @@ A modern, feature-rich Snake Game built with Java Swing, featuring multiple diff
 
 ## 🚀 How to Run
 
-### Prerequisites
-- Java Development Kit (JDK) 8 or higher
-- Windows/Linux/Mac with Java installed
+### Option 1: Run the Executable (Easiest - Windows Only)
+1. **Download** `SnakeGame.exe` from [Releases](https://github.com/bibekchandsah/snake-game/releases/latest)
+2. **Double-click** the downloaded file
+3. **Play!** 🎮
 
-### Compilation
+### Option 2: Run the JAR File (All Platforms)
+1. Make sure Java is installed: `java -version`
+2. Download `SnakeGame.jar` from [Releases](https://github.com/bibekchandsah/snake-game/releases/latest)
+3. Run: `java -jar SnakeGame.jar`
+
+### Option 3: Build from Source
+
+#### Prerequisites
+- Java Development Kit (JDK) 8 or higher
+- Git (optional)
+
+#### Clone Repository
+```bash
+git clone https://github.com/bibekchandsah/snake-game.git
+cd snake-game
+```
+
+#### Compilation
 ```bash
 javac SnakeGame.java GamePanel.java SettingsPanel.java HighScoreManager.java Food.java
 ```
 
-### Run
+#### Run
 ```bash
 java SnakeGame
 ```
+
+#### Build Executable (Windows)
+See [BUILD.md](BUILD.md) for detailed instructions on creating the EXE file.
 
 ## 🎯 How to Play
 
@@ -82,9 +134,22 @@ snake-game/
 ├── SettingsPanel.java      # UI controls (difficulty, settings, buttons)
 ├── HighScoreManager.java   # High score persistence manager
 ├── Food.java              # Food types and properties
+├── icon.ico               # Application icon
 ├── highscore.dat          # Saved high score (auto-generated)
-└── README.md              # This file
+├── preview1.png           # Welcome screen screenshot
+├── preview2.png           # Gameplay screenshot
+├── preview3.png           # Game over screenshot
+├── README.md              # This file
+└── BUILD.md               # Build instructions for EXE
 ```
+
+## 🎯 Releases
+
+Download the latest version from the [Releases](https://github.com/bibekchandsah/snake-game/releases) page:
+
+- **SnakeGame.exe** - Windows executable with custom icon
+- **SnakeGame.jar** - Cross-platform JAR file
+- **Source code** - ZIP and TAR.GZ archives
 
 ## 🛠️ Technical Details
 
